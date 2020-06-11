@@ -18,7 +18,7 @@ class Jira:
         self._issue = f"{host}rest/api/2/issue/"
         self._list_of_issues = f"{host}rest/api/2/search"
 
-    def _url_issue(self, issue_name):
+    def _url_issue_info(self, issue_name):
         return self._issue + issue_name
 
     def _url_issue_comments(self, issue_name):
@@ -71,9 +71,9 @@ class Jira:
         return issues
 
 
-    def get_issue(self, issue_name):
+    def get_issue_info(self, issue_name):
         data_main = self._get_json(
-            url=self._url_issue(issue_name),
+            url=self._url_issue_info(issue_name),
             params={"expand": "changelog"}
         )
 
@@ -88,7 +88,7 @@ class Jira:
         return data_main
 
     def get_issue_history(self, issue_name):
-        issue = self.get_issue(issue_name)
+        issue = self.get_issue_info(issue_name)
         history = []
         for entry in issue["changelog"]["histories"]:
             for item in entry["items"]:
