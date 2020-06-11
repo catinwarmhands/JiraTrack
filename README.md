@@ -20,7 +20,7 @@ python jiratrack.py ivanov MYPROJECT petrov
 
 # Contributing
 
-Буду рад мердж-реквестам и багфиксами или добавлением фич!
+Буду рад мердж-реквестам с багфиксами или добавлением фич!
 
 # TODO
 
