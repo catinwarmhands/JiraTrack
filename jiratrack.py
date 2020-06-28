@@ -4,7 +4,8 @@ import requests
 import datetime
 import getpass
 from tqdm import tqdm as progressbar
-from termcolor import colored
+from termcolor import colored, cprint
+from collections import defaultdict 
 
 class Jira:
     def __init__(self, host, username, password, target_project, target_username):
@@ -79,11 +80,11 @@ class Jira:
 
         # можно выгружать ещё и комментарии, но пока смысла нет
 
-        # data_comments = self._get_json(
-        #     url=self._url_issue_comments(issue_name)
-        # )
+        data_comments = self._get_json(
+            url=self._url_issue_comments(issue_name)
+        )
 
-        # data_main["comments"] = data_comments["comments"]
+        data_main["comments"] = data_comments["comments"]
 
         return data_main
 
@@ -97,21 +98,20 @@ class Jira:
                         "time":   entry["created"],
                         "author": entry["author"]["name"],
                         "field":  item["field"].lower(),
-                        "value":  (item["toString"] or "").replace('\r', '').replace('\n', '').lower()
+                        "value":  (item["toString"] or "").lower()#.replace('\r', '').replace('\n', '').lower()
                     })
                 except:
                     print(colored("BAD ITEM", "red"), item)
                     exit()
 
-        # можно выгружать ещё и комментарии, но пока смысла нет
 
-        # for entry in issue["comments"]:
-        #     history.append({
-        #         "time":   entry["created"],
-        #         "author": entry["author"]["name"],
-        #         "field":  "comment",
-        #         "value":  entry["body"].replace('\r', '').replace('\n', '').lower()
-        #     })
+        for entry in issue["comments"]:
+            history.append({
+                "time":   entry["created"],
+                "author": entry["author"]["name"],
+                "field":  "comment",
+                "value":  entry["body"]#.lower()#.replace('\r', '').replace('\n', '').lower()
+            })
         
         history = sorted(history, key=lambda e: e["time"])
         return history
@@ -136,12 +136,30 @@ def pretty_format(delta):
     else:
         return f"{int(hours)} {h}"
 
+
+def group_dict(d):
+    v = defaultdict(list)
+    for key, value in sorted(d.items()):
+        v[value].append(key)
+    return dict(v)
+
+
+def pretty_list(l):
+    if len(l) == 0:
+        return ""
+    if len(l) == 1:
+        return str(l[0])
+
+    return ", ".join(l[:len(l)-1]) + " и " + l[len(l)-1]
+
+
 def main():
     if len(sys.argv) < 3:
         print(f"Usage: python {__file__} your_username target_project [target_username]")
         exit()
 
     password = getpass.getpass("Пароль от Jira: ")
+
     jira = Jira(
         host            = "https://jira-new.neoflex.ru",
         username        = sys.argv[1],
@@ -151,7 +169,7 @@ def main():
     )
 
     # issues = [
-    #     "NFBDSSOHA-76",
+    #     "NFBDSSOHA-816",
     # ]
     # print(json.dumps(jira.get_issue_history(issues[0])))
     # exit()
@@ -167,17 +185,25 @@ def main():
     count_returned_from_prod = 0
 
     for issue, history in zip(issues, histories):
-        print(issue, end=' ')
+        print(f"https://jira-new.neoflex.ru/browse/{issue}", end=' ')
 
         has_returned_from_testing = False
         has_returned_from_prod    = False
         state_target_user_got_issue  = False
         state_target_user_done_issue = False
         state_issue_is_closed = False
-        time_estimate = None
-        time_real = None
+        custom_fields = dict()
+
         for entry in history:
             if entry["author"] == jira.target_username:
+                if entry["field"] == "comment":
+                    for line in entry["value"].splitlines():
+                        space_pos = line.find(' ')
+                        if len(line) > 2 and line[0] == '/' and space_pos != -1:
+                            value = line[space_pos+1:]
+                            if len(value) != 0:
+                                custom_fields[line[1:space_pos]] = value
+
                 if entry["field"] == "status" and ("in progress" in entry["value"] or "разработка" in entry["value"]):
                     if state_target_user_got_issue:
                         if state_target_user_done_issue:
@@ -199,6 +225,7 @@ def main():
             if state_target_user_got_issue and entry["field"] == "status" and"closed" in entry["value"] or "resolved" in entry["value"]:
                 state_issue_is_closed = True
 
+
         if not state_issue_is_closed:
             print(colored("Ещё не закрыто", "cyan"), end=' ')
         if has_returned_from_testing:
@@ -207,14 +234,10 @@ def main():
         if has_returned_from_prod:
             count_returned_from_prod += 1
             print(colored("Реопен", "red"), end=' ')
-
-        if time_estimate is not None and time_real is not None:
-            time_estimate = datetime.timedelta(seconds=time_estimate)
-            time_real     = datetime.timedelta(seconds=time_real)
-            if time_estimate == time_real:
-                print(colored(f"Запланировано и потрачено {pretty_format(time_real)}", "magenta"), end=' ')    
-            else:
-                print(colored(f"Запланировано {pretty_format(time_estimate)}, потрачено {pretty_format(time_real)}", "magenta"), end=' ')
+        
+        # сгруппируем поля что бы было красивее
+        for v, k in group_dict(custom_fields).items():
+            print(colored(f"{pretty_list(k)} {v}", "magenta"), end=' ')
 
         print()
     
