@@ -83,8 +83,6 @@ class Jira:
             params={"expand": "changelog"}
         )
 
-        # можно выгружать ещё и комментарии, но пока смысла нет
-
         data_comments = self._get_json(
             url=self._url_issue_comments(issue_name)
         )
@@ -147,9 +145,11 @@ class Jira:
                             value = line[space_pos+1:]
                             if len(value) != 0:
                                 custom_fields[line[1:space_pos]] = value
+                                if result["time"] is None:
+                                    result["time"] = simplfy_time(entry["time"])
 
                 if entry["field"] == "status" and ("in progress" in entry["value"] or "разработка" in entry["value"]):
-                    result["time"] = entry["time"]
+                    result["time"] = simplfy_time(entry["time"])
                     if state_target_user_got_issue:
                         if state_target_user_done_issue:
                             has_returned_from_testing = True
@@ -179,6 +179,10 @@ class Jira:
 
         return result
   
+def simplfy_time(t):
+    # например t = '2020-07-21T16:33:37.000+0300'
+    return datetime.datetime.strptime(t, '%Y-%m-%dT%H:%M:%S.000+0300').strftime('%Y-%m-%d %H:%M:%S')
+
 
 def group_dict(d):
     v = defaultdict(list)
@@ -301,6 +305,7 @@ def parallel_process(array, function, n_jobs=4, use_kwargs=False, front_num=0):
         except Exception as e:
             out.append(e)
     return front + out
+
 
 def main():
     if len(sys.argv) < 3:
