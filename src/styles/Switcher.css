@@ -1,0 +1,133 @@
+.switcher {
+    display: inline-block;
+    overflow: hidden;
+}
+
+.switcher-item {
+    display: inline-block;
+    float: left;
+}
+
+.switcher input[type=radio] {
+    display: none;
+}
+
+.switcher--font-xs {
+    font-size: 12px;
+}
+
+.switcher--font-sm {
+    font-size: 14px;
+}
+
+.switcher--font-md {
+    font-size: 16px;
+}
+
+.switcher--size-small label {
+    height: 24px;
+    padding: 0px 10px;
+}
+
+.switcher--size-default label {
+    height: 32px;
+    padding: 0px 12px;
+}
+
+.switcher--size-large label {
+    height: 40px;
+    padding: 0px 16px;
+}
+
+.switcher label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    line-height: 34px;
+    user-select: none;
+    background: #FFFFFF;
+    color: #666666;
+    box-shadow: inset 0px 1px 0px #B3B3B3, inset 0px -1px 0px #B3B3B3;
+    box-sizing: border-box;
+}
+
+/* Закругления для крайних элементов */
+.switcher .switcher-item:first-child label {
+    box-shadow: inset 1px 0px 0px #B3B3B3, inset 0px 1px 0px #B3B3B3, inset 0px -1px 0px #B3B3B3;
+    border-radius: 4px 0 0 4px;
+}
+
+.switcher .switcher-item:last-child label {
+    box-shadow: inset -1px 0px 0px #B3B3B3, inset 0px 1px 0px #B3B3B3, inset 0px -1px 0px #B3B3B3;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Hover Normal */
+.switcher label:hover {
+    background: #FFFFFF;
+    color: #2A356C;
+    filter: drop-shadow(-2px 0px 4px rgba(0, 0, 0, 0.1)) drop-shadow(2px 0px 4px rgba(0, 0, 0, 0.1));
+    box-shadow: inset -1px 0px 0px #2A356C, inset 1px 0px 0px #2A356C, inset 0px 1px 0px #2A356C, inset 0px -1px 0px #2A356C;
+}
+
+.switcher .switcher-item:first-child label:hover {
+    filter: drop-shadow(2px 0px 4px rgba(0, 0, 0, 0.1));
+    box-shadow: inset 1px 0px 0px #2A356C, inset 0px 1px 0px #2A356C, inset 0px -1px 0px #2A356C, inset -1px 0px 0px #2A356C;
+}
+
+.switcher .switcher-item:last-child label:hover {
+    filter: drop-shadow(-2px 0px 4px rgba(0, 0, 0, 0.1));
+    box-shadow: inset -1px 0px 0px #2A356C, inset 0px 1px 0px #2A356C, inset 0px -1px 0px #2A356C, inset 1px 0px 0px #2A356C;
+}
+
+/* Checked */
+.switcher input[type=radio]:checked + label {
+    background: #424D78;
+    color: #FFFFFF;
+    box-shadow: inset 0px 1px 0px #424D78, inset 0px -1px 0px #424D78;
+}
+
+/* Hover Checked */
+.switcher input[type=radio]:checked + label:hover {
+    background: #2A356C;
+    box-shadow: inset 0px 1px 0px #2A356C, inset 0px -1px 0px #2A356C;
+}
+
+/* Pressed */
+.switcher label:active {
+    filter: none;
+}
+
+/* Disabled */
+.switcher input[type=radio]:disabled + label {
+    background: #FFFFFF;
+    color: #C6C9D6;
+    box-shadow: inset 0px 1px 0px #C6C9D6, inset 0px -1px 0px #C6C9D6;
+}
+
+.switcher .switcher-item:first-child input[type=radio]:disabled + label {
+    box-shadow: inset 1px 0px 0px #C6C9D6, inset 0px 1px 0px #C6C9D6, inset 0px -1px 0px #C6C9D6;
+}
+
+.switcher .switcher-item:last-child input[type=radio]:disabled + label {
+    box-shadow: inset -1px 0px 0px #C6C9D6, inset 0px 1px 0px #C6C9D6, inset 0px -1px 0px #C6C9D6;
+}
+
+/*!* Hover Disabled *!*/
+.switcher input[type=radio]:disabled + label:hover {
+    box-shadow: inset -1px 0px 0px #C6C9D6, inset 1px 0px 0px #C6C9D6, inset 0px 1px 0px #C6C9D6, inset 0px -1px 0px #C6C9D6;
+}
+
+.switcher .switcher-item:first-child input[type=radio]:disabled + label:hover {
+    box-shadow: inset 1px 0px 0px #C6C9D6, inset 0px 1px 0px #C6C9D6, inset 0px -1px 0px #C6C9D6, inset -1px 0px 0px #C6C9D6;
+}
+
+.switcher .switcher-item:last-child input[type=radio]:disabled + label:hover {
+    box-shadow: inset -1px 0px 0px #C6C9D6, inset 0px 1px 0px #C6C9D6, inset 0px -1px 0px #C6C9D6, inset 1px 0px 0px #C6C9D6;
+}
+
+/* Checked Disabled */
+.switcher input[type=radio][disabled]:checked + label {
+    background: #C6CAD7;
+    color: #FFFFFF;
+}
