@@ -1,5 +1,5 @@
 import * as React from "react";
-import '../../styles/Switcher.css';
+import '../styles/Switcher.css';
 import _ from "lodash";
 
 type OptionType = {value: string, label?: string, disabled?: boolean};

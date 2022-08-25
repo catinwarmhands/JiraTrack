@@ -1,0 +1,13 @@
+/* FONT IMPORTS */
+@import url(https://fonts.googleapis.com/icon?family=Material+Icons);
+
+@font-face {
+    font-family: Roboto, sans-serif;
+    font-display: block;
+    src: local('../fonts/Roboto');
+}
+
+body {
+    font-family: "Roboto", sans-serif !important;
+    font-size: 14px !important;
+}
