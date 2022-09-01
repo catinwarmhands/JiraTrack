@@ -1,0 +1,38 @@
+.Filter {
+    display: inline-block !important;
+
+}
+.FilterItem {
+    display: inline-block;
+    margin-right: 10px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.FilterItem--condition {
+    width: fit-content !important;
+}
+
+.FilterItem--operation {
+    width: fit-content !important;
+}
+
+.FilterItem--value {
+    width: 60px;
+}
+
+.FilterItem--category {
+    width: fit-content !important;
+}
+
+.FilterItem--delete {
+    padding-left: 3px;
+    padding-right: 3px;
+    color: grey;
+    font-size: 10px !important;
+}
+
+
+.Filter-suffix {
+    float: right;
+}

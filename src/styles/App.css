@@ -1,25 +1,77 @@
+@import "./antd-modified.css";
 body {
-    --primary-color: #2a356c;
+    --primary-color: #424D78;
+    --primary-color-light: #6576bd;
+    --primary-color-hover: #2a356c;
     --secondary-color: #E6E6E6;
     --background-color: white;
     --text-color-primary: balck;
     --text-color-secondary: white;
     --footer-height: 85px;
+    --secondary-color-dark: #1E1E1E;
 }
 
 body[data-theme='dark'] {
-    --secondary-color: #1E1E1E;
+    /*--primary-color: #426378;*/
+    --secondary-color: var(--secondary-color-dark);
+    --background-color: #222628;
+    --text-color-primary: white;
+    --text-color-secondary: black;
 }
+
 
 body {
     padding: 0;
     margin: 0;
+    background-color: var(--background-color);
 }
+
+.ag-root-wrapper-body.ag-layout-normal.ag-focus-managed {
+    height: 100%;
+}
+
+label, input, span {
+    color: var(--text-color-primary) !important;
+}
+
+.ant-input,
+.ant-input-number-input,
+.ant-input-number-handler-wrap,
+.ant-input-affix-wrapper,
+.ant-picker,
+.ant-tree-list-holder,
+.ant-btn.ant-btn-default,
+.ant-btn.ant-btn-dashed,
+.ant-tag,
+.ant-select-selector,
+.ant-select-dropdown {
+    background-color: var(--background-color) !important;
+}
+
+.ant-select-item-option {
+    color: var(--text-color-primary) !important;
+}
+.ant-select-item-option-selected, .ant-select-item-option-active {
+    color: black !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active  {
+    transition: var(--background-color) 5000s;
+    /*background-color: var(--background-color);*/
+    -webkit-text-fill-color: black !important;
+}
+.ant-picker-header > button > span {
+    color: black !important;
+}
+
 
 .App {
     position: relative;
     min-height: 100vh;
-    color: var(--text-color-primary);
+    /*height: 100vh;*/
 }
 
 .header {
@@ -32,6 +84,7 @@ body {
     width: 100%;
     display: flex;
     justify-content: space-between;
+    z-index: 100;
 }
 
 .header .logo {
@@ -42,12 +95,34 @@ body {
     font-weight: bold;
 }
 
+.header .ant-switch {
+    margin-right: 20px;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+}
+.header .ant-switch span {
+    color: black;
+    margin-top: 0.5px;
+}
+
+.header .ant-switch-checked span {
+    color: white;
+}
+
+
+.header .ant-switch-checked {
+    /*color: white !important;*/
+    background-color: var(--secondary-color-dark);
+}
+
 .main {
     margin-top: 10px;
     margin-left: 10px;
     margin-right: 10px;
     padding-bottom: calc(10px + var(--footer-height));
-    background-color: white;
+    background-color: var(--background-color);
 }
 
 .footer {
@@ -59,13 +134,15 @@ body {
     left: 0;
     width: 100%;
     height: var(--footer-height);
+    color: var(--text-color-primary);
 }
 .footer a {
     box-shadow: inset 0 0 0 0 var(--primary-color);
-    color: var(--primary-color);
+    color: var(--text-color-primary);
     margin: 0 -.25rem;
     padding: 0 .25rem;
     transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
+
 }
 .footer a:hover {
     box-shadow: inset 150px 0 0 0 var(--primary-color);

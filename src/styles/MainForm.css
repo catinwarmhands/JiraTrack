@@ -1,0 +1,42 @@
+body {
+    --assigneeModeWidth: 185px;
+    --tagsModeWidth: 90px;
+}
+
+.ant-form-item-label {
+    white-space: normal;
+}
+
+.ant-form-item-label > label {
+    height: auto;
+}
+
+.MainForm--assignee {
+    width: calc(100% - var(--assigneeModeWidth));
+}
+
+.MainForm--assigneeMode {
+    width: var(--assigneeModeWidth);
+}
+
+.MainForm--tags {
+    width: calc(100% - var(--tagsModeWidth));
+}
+
+.MainForm--tagsMode {
+    width: var(--tagsModeWidth);
+}
+
+.MainForm--tagsMode>.ant-select-selector {
+    height: 34px !important;
+}
+
+/*.filter-col {*/
+/*    padding-left: 10px;*/
+/*}*/
+
+.filter-col-multi .MainForm--datepicker {
+    width: 100%;
+}
+
+

@@ -1,0 +1,265 @@
+/*GRID*/
+.ag-row:hover {
+    outline: none !important;
+    box-shadow: none !important;
+    /*background-color: #FFF8E0 !important*/
+}
+.dataset-grid {
+    height: 100%;
+    max-height: 800px;
+    /*height: 600px;*/
+    width: 100%;
+}
+.ag-header-cell-resize::after {
+    background-color: transparent !important;
+}
+
+
+/*borders*/
+.dataset-grid * .ag-header-cell:after {
+    content: "";
+    position: absolute;
+    display: block;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background-color: #E6E6E6;
+    z-index: 100;
+}
+
+.dataset-grid * .ag-header-group-cell-label:after {
+    content: "";
+    position: absolute;
+    display: block;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background-color: #E6E6E6;
+}
+
+/*.dataset-grid .ag-cell-focus {*/
+/*    border-left: 1px solid transparent !important;*/
+/*}*/
+
+/*.dataset-grid .ag-cell {*/
+/*    border-right: 1px solid #E6E6E6 !important;*/
+/*    border-bottom: none !important;*/
+/*    border-top: none !important;*/
+/*    padding-left: 16px !important;*/
+/*    padding-right: 16px !important;*/
+/*}*/
+
+/*!*paginator*!*/
+/*.dataset-paginator {*/
+/*    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);*/
+/*    border-radius: 0 0 4px 4px;*/
+/*    !*margin-bottom: 50px;*!*/
+/*    max-height: 40px;*/
+/*}*/
+
+/*.dataset-grid.dataset-with-paginator > div > div:first-child {*/
+/*    height: calc(100% - 40px) !important;*/
+/*}*/
+
+/*!*shadows*!*/
+/*.dataset-grid {*/
+/*    filter: drop-shadow(-2px -2px 4px rgba(0, 0, 0, 0.05));*/
+/*    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);*/
+/*    border-radius: 4px;*/
+/*}*/
+
+/*.dataset-grid .ag-row:hover {*/
+/*    outline: 1px solid #E6E6E6;*/
+/*    !*background: #FAFAFA !important;*!*/
+/*    box-sizing: border-box;*/
+/*    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);*/
+/*    z-index: 100;*/
+/*}*/
+
+/*!*chess background*!*/
+/*.dataset-grid .ag-row:nth-child(even) {*/
+/*    background-color: #FAFAFA;*/
+/*}*/
+
+/*.dataset-grid * .ag-cell-inline-editing {*/
+/*    height: inherit;*/
+/*    padding: 0 8px 0 8px;*/
+/*}*/
+
+/*!*.ag-theme-material .ag-cell-inline-editing*!*/
+/*.dataset-grid .ag-cell-inline-editing {*/
+/*    border-radius: unset;*/
+/*    box-shadow: unset;*/
+/*    border-left: unset;*/
+/*    border-color: #e6e6e6 !important;*/
+/*    background-color: transparent;*/
+/*}*/
+
+/*.dataset-grid * .ag-header-cell-label {*/
+/*    justify-content: center;*/
+/*    font-size: 14px;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.dataset-grid * .ag-header-group-cell-label {*/
+/*    justify-content: center;*/
+/*    font-size: 14px;*/
+/*}*/
+
+/*.dataset-grid * .ag-header {*/
+/*    background: #F2F2F2 !important;*/
+/*}*/
+
+/*.dataset-grid * .ag-column-hover {*/
+/*    background-color: unset;*/
+/*}*/
+
+/*.dataset-grid .ag-row {*/
+/*    border: none;*/
+/*}*/
+
+/*.dataset-grid .input-checkbox {*/
+/*    margin: 0 auto -10px auto;*/
+/*}*/
+
+/*.dataset-grid .input {*/
+/*    margin-top: 4px;*/
+/*}*/
+
+/*.dataset-grid .ag-cell > span {*/
+/*    white-space: pre*/
+/*}*/
+
+/*.bottomLabel {*/
+/*    background-color: #fafafa;*/
+/*}*/
+
+/*.dataset-grid.ag-theme-material .ag-header-cell,*/
+/*.dataset-grid.ag-theme-material .ag-header-group-cell {*/
+/*    padding-left: 17px !important;*/
+/*    padding-right: 17px !important;*/
+/*}*/
+
+/*.dataset-grid .ag-row {*/
+/*    border: none !important;*/
+/*}*/
+
+/*.dataset-grid .ag-center-cols-container,*/
+/*.dataset-grid .ag-center-cols-container > .ag-row {*/
+/*    min-width: 100%;*/
+/*}*/
+
+/*.dataset-grid .header-white-space .ag-header-group-text,*/
+/*.dataset-grid .header-white-space .ag-header-cell-text {*/
+/*    white-space: normal !important;*/
+/*}*/
+
+/*.dataset-grid a {*/
+/*    display: block;*/
+/*    justify-content: unset;*/
+/*}*/
+
+/*.ag-cell-value a {*/
+/*    text-decoration: underline;*/
+/*}*/
+
+/*!*after enableCellTextSelection*!*/
+/*.dataset-grid .ag-cell-wrapper {*/
+/*    width: 100%;*/
+/*    text-align: inherit !important;*/
+/*    display: inline-grid;*/
+/*}*/
+
+/*!*zoom*!*/
+
+/*.dataset-grid .zoom50{*/
+/*    transform: scale(0.5);*/
+/*    transform-origin: left top;*/
+/*    width: 200%!important;*/
+/*    min-width: unset!important;*/
+/*}*/
+
+/*.dataset-grid.dataset-with-paginator > div > div.zoom50{*/
+/*    height: 195% !important;*/
+/*}*/
+
+/*.dataset-grid .zoom75{*/
+/*    transform: scale(0.75);*/
+/*    transform-origin: left top;*/
+/*    width: 133.35%!important;*/
+/*    min-width: unset!important;*/
+/*}*/
+
+/*.dataset-grid .zoom90{*/
+/*    transform: scale(0.9);*/
+/*    transform-origin: left top;*/
+/*    width: 111.1%!important;*/
+/*    min-width: unset!important;*/
+/*}*/
+/*.dataset-grid.dataset-with-paginator > div > div.zoom90{*/
+/*    height: 107%!important;*/
+/*}*/
+
+/*.dataset-grid.dataset-with-paginator > div > div.zoom75{*/
+/*    height: 129%!important;*/
+/*}*/
+
+/*.dataset-grid .zoom125{*/
+/*    transform: scale(1.25);*/
+/*    transform-origin: left top;*/
+/*    width: 80%!important;*/
+/*    min-width: unset!important;*/
+/*}*/
+/*.dataset-grid.dataset-with-paginator > div > div.zoom125{*/
+/*    height: 75%!important;*/
+/*}*/
+
+/*.dataset-grid .zoom150{*/
+/*    transform: scale(1.5);*/
+/*    transform-origin: left top;*/
+/*    width: 66.65%!important;*/
+/*    min-width: unset!important;*/
+/*}*/
+/*.dataset-grid.dataset-with-paginator > div > div.zoom150{*/
+/*    height: 61.5%!important;*/
+/*}*/
+
+/*.dataset-grid .zoom200{*/
+/*    transform: scale(2);*/
+/*    transform-origin: left top;*/
+/*    width: 50%!important;*/
+/*    min-width: unset!important;*/
+/*}*/
+/*.dataset-grid.dataset-with-paginator > div > div.zoom200{*/
+/*    height: 45%!important;*/
+/*}*/
+
+/*.dataset-grid.auto-height .ag-center-cols-clipper {*/
+/*    min-height: unset !important;*/
+/*}*/
+
+/*.ag-cell-label-container .ag-header-cell-text {*/
+/*    color: #333333;*/
+/*    font-size: 12px;*/
+/*}*/
+
+/*.ag-header-viewport {*/
+/*    background-color: #f2f2f2;*/
+/*}*/
+
+/*.cell-span-odd {*/
+/*    background-color: #fcfcfc;*/
+/*    border-left: 1px solid lightgrey !important;*/
+/*    border-right: 1px solid lightgrey !important;*/
+/*    border-bottom: 1px solid lightgrey !important;*/
+/*}*/
+/*.cell-span-even {*/
+/*    background-color: #ffffff;*/
+/*    border-left: 1px solid lightgrey !important;*/
+/*    border-right: 1px solid lightgrey !important;*/
+/*    border-bottom: 1px solid lightgrey !important;*/
+/*}*/
+/*.grid-edit-drawer .ant-drawer-footer {*/
+/*    display: flex;*/
+/*    flex-flow: row wrap;*/
+/*}*/
