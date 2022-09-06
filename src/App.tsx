@@ -10,12 +10,14 @@ import {AgGridReact} from "ag-grid-react";
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {GridReadyEvent} from "ag-grid-community";
+import {Model} from "./Model";
 
 interface AppProps {
 }
 
 interface AppState {
     theme: string;
+    model: Model;
 }
 
 class App extends React.Component<AppProps, AppState> {
@@ -23,7 +25,9 @@ class App extends React.Component<AppProps, AppState> {
         super(props);
         this.state = {
             theme: localStorage.getItem("theme") || "light",
+            model: new Model({}),
         };
+        // this.model = new Model({});
     }
 
     componentDidMount = () => {
@@ -69,7 +73,7 @@ class App extends React.Component<AppProps, AppState> {
         // columnApi.autoSizeAllColumns();
     }
 
-    renderContent = () => {
+    renderGrid = () => {
         /*
         Тип задачи
         Номер (гиперссылка на соответствующую задачу в Jira)
@@ -163,10 +167,28 @@ class App extends React.Component<AppProps, AppState> {
         }
 
         return (
+            <div className={"dataset-grid ag-theme-alpine" + (this.state.theme === "dark" ? "-dark" : "")}>
+                <AgGridReact
+                    onGridReady={this.onGridReady}
+                    rowData={rowData}
+                    columnDefs={columnDefs}
+                    defaultColDef={defaultColDef}
+                    multiSortKey={'ctrl'}
+                />
+            </div>
+        );
+    }
+
+    handleFormFinish = (values: {[key: string]: any}) => {
+        this.state.model.updateFields(values);
+    }
+
+    renderContent = () => {
+        return (
             <div className={"main"}>
                 <Row>
                     <Col span={24}>
-                        <MainForm/>
+                        <MainForm onFinish={this.handleFormFinish}/>
                     </Col>
                 </Row>
                 <Row>
@@ -176,15 +198,7 @@ class App extends React.Component<AppProps, AppState> {
                 </Row>
                 <Row>
                     <Col span={24}>
-                        <div className={"dataset-grid ag-theme-alpine" + (this.state.theme === "dark" ? "-dark" : "")}>
-                            <AgGridReact
-                                onGridReady={this.onGridReady}
-                                rowData={rowData}
-                                columnDefs={columnDefs}
-                                defaultColDef={defaultColDef}
-                                multiSortKey={'ctrl'}
-                            />
-                        </div>
+                        {this.renderGrid()}
                     </Col>
                 </Row>
             </div>

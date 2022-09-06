@@ -46,7 +46,6 @@ class TagsInput extends React.Component<TagsInputProps, TagsInputState> {
     handleNewInputConfirm = () => {
         const value = this.state.newInputValue?.trim();
         if (value && this.state.items.indexOf(value) === -1) {
-            //TODO выводить ошибку если такой тег уже есть
             const items = [...this.state.items, value];
             this.setState({items}, this.handleChange)
         }

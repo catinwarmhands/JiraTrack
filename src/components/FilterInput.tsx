@@ -3,7 +3,7 @@ import * as React from "react";
 import '../styles/FilterInput.css';
 import {CloseCircleFilled, CloseOutlined, PlusOutlined} from '@ant-design/icons';
 
-type FilterValueType = {condition?: ("and" | "or"), operation: string, value: number, category?: string};
+export type FilterValueType = {condition?: ("and" | "or"), operation: string, value: number, category?: string};
 type FilterOperationType = {key: string, label: string};
 type FilterCategoryType = {key: string, label: string};
 

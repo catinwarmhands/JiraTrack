@@ -14,20 +14,8 @@ export const splitList = (list: any[], chunksCount: number, overflowAlign: "left
         } else {
             chunk = chunkSizes.length - 1 - (i % chunkSizes.length)
         }
-        console.log("chunk", chunk)
         chunkSizes[chunk] += 1;
     }
-    console.log(chunkSizes);
-    // let counter = 0;
-    // while (counter < list.length) {
-    //     for (let i = chunkSizes.length - 1; i >= 0; i--) {
-    //         if (counter === list.length) {
-    //             break;
-    //         }
-    //         chunkSizes[i] += 1;
-    //         counter += 1;
-    //     }
-    // }
 
     let result: any[][] = [];
     let i = 0;
@@ -40,4 +28,12 @@ export const splitList = (list: any[], chunksCount: number, overflowAlign: "left
     }
 
     return result;
+}
+
+export const parseJSON = (value: any): any => {
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+    }
+    return value;
 }

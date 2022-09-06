@@ -1,14 +1,15 @@
-import {Button, Col, DatePicker, Form, Input, Row, Select, Tooltip} from "antd";
+import {Button, Col, DatePicker, Form, Input, Row, Select, Tooltip, Tree} from "antd";
 import * as React from "react";
 import '../styles/MainForm.css';
-import {LockOutlined, UserOutlined, LinkOutlined, UnorderedListOutlined, DownloadOutlined } from '@ant-design/icons';
-import {Tree} from 'antd';
+import {DownloadOutlined, LinkOutlined, LockOutlined, UnorderedListOutlined, UserOutlined} from '@ant-design/icons';
 import type {DataNode} from 'antd/es/tree';
 import TagsInput from "./TagsInput";
 import FilterInput from "./FilterInput";
-import {splitList} from "../utils";
+import {parseJSON, splitList} from "../utils";
+import _ from "lodash";
 
 interface MainFormProps {
+    onFinish: (values: {[key: string]: any}) => void;
 }
 
 interface MainFormState {
@@ -44,21 +45,9 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                 columnsCount: newColumnsCount,
                 filtersChunks: splitList(filters, filtersColumnsCount, "left"),
             });
-            console.log(oldColumnsCount, newColumnsCount)
         }
     };
 
-    handleFinish = (values: any) => {
-        console.log(values);
-    }
-
-    handleFinishFailed = (errorInfo: any) => {
-        console.log(errorInfo);
-    }
-
-    handleStatusCheck = (checked: any) => {
-        console.log(checked);
-    }
 
     getFiltersList = (): JSX.Element[] => {
         const treeData: DataNode[] = [{
@@ -167,6 +156,19 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
             ),
             (
                 <Form.Item
+                    label="Дата последнего изменения"
+                    name="dateLastChange"
+                >
+                    <DatePicker.RangePicker
+                        allowEmpty={[true, true]}
+                        format={"DD.MM.yyyy"}
+                        placeholder={["С", "По"]}
+                        className={"MainForm--datepicker"}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
                     label="Статус"
                     name="status"
                     trigger={"onCheck"}
@@ -175,8 +177,6 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                     <Tree
                         checkable={true}
                         selectable={false}
-                        // defaultExpandedKeys={["all"]}
-                        onCheck={this.handleStatusCheck}
                         treeData={treeData}
                     />
                 </Form.Item>
@@ -255,6 +255,45 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
         ];
     }
 
+    saveValuesToLocalStorage = (values: {[key: string]: any}): void => {
+        for (const key in values) {
+            let value = values[key]
+            if (key === "password") {
+                continue;
+            }
+            if (
+                value === undefined
+                || value === null
+                || (_.isString(value) && value.trim() === "")
+                || (_.isArray(value) && value.length === 0)
+            ) {
+                localStorage.removeItem(key);
+                continue;
+            }
+            if (_.isArray(value)) {
+                value = JSON.stringify(value);
+            }
+            localStorage.setItem(key, value);
+        }
+    }
+
+    getValuesFromLocalStorage = (): {[key: string]: any} => {
+        let result: {[key: string]: any} = {};
+        for (const key in localStorage) {
+            result[key] = parseJSON(localStorage.getItem(key));
+        }
+        result.jiraUrl = result.jiraUrl || "https://neojira.neoflex.ru/secure/Dashboard.jspa";
+        result.status = result.status || ["all"];
+        result.tagsMode = result.tagsMode || "any";
+        result.assigneeMode = result.assigneeMode || "any";
+        return result;
+    }
+
+    handleFinish = (values: {[key: string]: any}): void => {
+        this.saveValuesToLocalStorage(values);
+        this.props.onFinish(values);
+    }
+
     render = () => {
         const columnsCount = Math.min(this.state.columnsCount, this.state.filtersChunks.length+1);
         const colSpan = Math.floor(24/columnsCount);
@@ -268,7 +307,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                 <Form.Item
                     label="Адрес Jira"
                     name="jiraUrl"
-                    rules={[{ required: true, message: 'Пожалуйста, введите адрес Jira' }]}
+                    rules={[{ required: true, message: 'Пожалуйста, введите url Jira' }]}
                 >
                     <Input
                         allowClear
@@ -332,16 +371,17 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
             <Form
                 name="basic"
                 labelCol={{span: labelSpan}}
-                initialValues={{
-                    status: ["all"],
-                    // tags: ["hello", "world1"],
-                    tagsMode: "any",
-                    assigneeMode: "any",
-                    // reopenFilters: [{operation: "==", value: 1},{condition: "or", operation: ">", value: 5},],
-                    // returnFilters: [{operation: "==", value: 1, category: "any"},{condition: "or", operation: ">", value: 5, category: "development"},],
-                }}
+                // initialValues={{
+                //     AAAA: "test",
+                //     status: ["all"],
+                //     // tags: ["hello", "world1"],
+                //     tagsMode: "any",
+                //     assigneeMode: "any",
+                //     // reopenFilters: [{operation: "==", value: 1},{condition: "or", operation: ">", value: 5},],
+                //     // returnFilters: [{operation: "==", value: 1, category: "any"},{condition: "or", operation: ">", value: 5, category: "development"},],
+                // }}
+                initialValues={this.getValuesFromLocalStorage()}
                 onFinish={this.handleFinish}
-                onFinishFailed={this.handleFinishFailed}
                 colon={false}
             >
                 <Row gutter={10}>
