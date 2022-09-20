@@ -26,3 +26,7 @@
 .TagsInput-suffix {
     float: right;
 }
+
+.tag-text {
+    display: inline-block;
+}

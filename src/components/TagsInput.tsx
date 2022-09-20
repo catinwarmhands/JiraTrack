@@ -36,7 +36,7 @@ class TagsInput extends React.Component<TagsInputProps, TagsInputState> {
     }
 
     handleRemove = (tagToRemove: string) => {
-        this.setState({items: this.state.items.filter(tag => tag !== tagToRemove)});
+        this.setState({items: this.state.items.filter(tag => tag !== tagToRemove)}, this.handleChange);
     }
 
     handleNewInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,14 +103,15 @@ class TagsInput extends React.Component<TagsInputProps, TagsInputState> {
                                     closable={true}
                                     onClose={() => this.handleRemove(tag)}
                                 >
-                                    <span
+                                    <div
                                         onClick={e => {
                                             this.setState({editInputIndex: index, editInputValue:tag})
                                             e.preventDefault();
                                         }}
+                                        className={"tag-text"}
                                     >
                                         {tag}
-                                    </span>
+                                    </div>
                                 </Tag>
                             );
                         }

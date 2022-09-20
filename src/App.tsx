@@ -1,5 +1,5 @@
 import React from 'react';
-import {Col, Progress, Row, Switch} from "antd";
+import {Col, message, Progress, Row, Switch} from "antd";
 import 'material-icons/iconfont/material-icons.css';
 import "./styles/Fonts.css"
 import "./styles/Scrollbar.css"
@@ -10,7 +10,16 @@ import {AgGridReact} from "ag-grid-react";
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {GridReadyEvent} from "ag-grid-community";
-import {Model} from "./Model";
+import Model from "./Model";
+import {
+    dateFormatter,
+    KeyRenderer,
+    NameAndIconCompactRenderer,
+    NameAndIconRenderer,
+    TagRenderer,
+    TagsRenderer
+} from "./components/CellRenderers";
+import {dateComparator, keyComparator, nameAndIconComparator} from "./components/Comparators";
 
 interface AppProps {
 }
@@ -18,14 +27,24 @@ interface AppProps {
 interface AppState {
     theme: string;
     model: Model;
+    progressPercent: number;
+    progressStatus?: "exception";
+    rowData: any[];
 }
 
 class App extends React.Component<AppProps, AppState> {
     constructor(props: AppProps) {
         super(props);
+        const model = new Model({
+            showMessage: this.showMessage,
+            onProgressChange: this.handleProgressChange,
+            onDataChange: this.handleDataChange,
+        });
         this.state = {
             theme: localStorage.getItem("theme") || "light",
-            model: new Model({}),
+            model: model,
+            progressPercent: model.state.progress,
+            rowData: [],
         };
         // this.model = new Model({});
     }
@@ -40,6 +59,35 @@ class App extends React.Component<AppProps, AppState> {
         const container = document.getElementsByTagName("body")[0];
         localStorage.setItem("theme", theme);
         container.setAttribute("data-theme", theme);
+    }
+
+    handleGridReady = (_event: GridReadyEvent) => {
+        // const gridApi = event.api;
+        // const columnApi = event.columnApi;
+        // columnApi.autoSizeAllColumns();
+    }
+
+    handleDataChange = (rowData: any[]) => {
+        this.setState({rowData});
+    }
+
+    handleProgressChange = (percent: number, failed: boolean) => {
+        this.setState({
+            progressPercent: percent,
+            progressStatus: failed ? "exception" : undefined,
+        });
+    }
+
+    handleFormFinish = (values: {[key: string]: any}) => {
+        this.state.model.onStart(values);
+    }
+
+    showMessage = (category: "success" | "warning" | "error", msg: string, duration: number = 5): void => {
+        switch (category) {
+            case "success": message.success(msg, duration); break;
+            case "warning": message.warning(msg, duration); break;
+            case "error": message.error(msg, duration); break;
+        }
     }
 
     renderHeader = () => {
@@ -67,13 +115,10 @@ class App extends React.Component<AppProps, AppState> {
         );
     }
 
-    onGridReady = (_event: GridReadyEvent) => {
-        // const gridApi = event.api;
-        // const columnApi = event.columnApi;
-        // columnApi.autoSizeAllColumns();
-    }
-
     renderGrid = () => {
+        if (this.state.rowData.length == 0) {
+            return null;
+        }
         /*
         Тип задачи
         Номер (гиперссылка на соответствующую задачу в Jira)
@@ -101,27 +146,34 @@ class App extends React.Component<AppProps, AppState> {
             {
                 field: "type",
                 headerName: "Тип",
-                // rowSpan: 2
+                cellRenderer: NameAndIconCompactRenderer,
+                comparator: nameAndIconComparator,
             },
             {
-                field: "ref",
-                headerName: "Номер",
+                field: "key",
+                headerName: "Задача",
+                cellRenderer: KeyRenderer,
+                comparator: keyComparator,
             },
             {
                 field: "priority",
                 headerName: "Приоритет",
+                cellRenderer: NameAndIconCompactRenderer,
+                comparator: nameAndIconComparator,
             },
             {
                 field: "status",
                 headerName: "Статус",
+                cellRenderer: TagRenderer,
             },
             {
-                field: "name",
+                field: "summary",
                 headerName: "Название",
             },
             {
                 field: "tags",
                 headerName: "Метки",
+                cellRenderer: TagsRenderer,
             },
             {
                 field: "reopenCount",
@@ -148,29 +200,30 @@ class App extends React.Component<AppProps, AppState> {
                 headerName: "Фактический расход",
             },
             {
-                field: "dateOpen",
+                field: "dateCreated",
                 headerName: "Дата открытия",
+                valueFormatter: dateFormatter,
+                comparator: dateComparator,
             },
             {
                 field: "dateRelease",
                 headerName: "Дата плановой поставки",
+                valueFormatter: dateFormatter,
+                comparator: dateComparator,
+            },
+            {
+                field: "dateUpdated",
+                headerName: "Дата последнего изменения",
+                valueFormatter: dateFormatter,
+                comparator: dateComparator,
             },
         ];
-
-        let rowData: any[] = [];
-        for (let i = 0; i < 50; i++) {
-            let obj: any = {};
-            for (const def of columnDefs) {
-                obj[def.field] = def.field + " " + i;
-            }
-            rowData.push(obj);
-        }
 
         return (
             <div className={"dataset-grid ag-theme-alpine" + (this.state.theme === "dark" ? "-dark" : "")}>
                 <AgGridReact
-                    onGridReady={this.onGridReady}
-                    rowData={rowData}
+                    onGridReady={this.handleGridReady}
+                    rowData={this.state.rowData}
                     columnDefs={columnDefs}
                     defaultColDef={defaultColDef}
                     multiSortKey={'ctrl'}
@@ -179,8 +232,13 @@ class App extends React.Component<AppProps, AppState> {
         );
     }
 
-    handleFormFinish = (values: {[key: string]: any}) => {
-        this.state.model.updateFields(values);
+    renderProgressBar = () => {
+        return (
+            <Progress
+                percent={this.state.progressPercent}
+                status={this.state.progressStatus}
+            />
+        );
     }
 
     renderContent = () => {
@@ -193,7 +251,7 @@ class App extends React.Component<AppProps, AppState> {
                 </Row>
                 <Row>
                     <Col span={24}>
-                        <Progress percent={100}/>
+                        {this.renderProgressBar()}
                     </Col>
                 </Row>
                 <Row>

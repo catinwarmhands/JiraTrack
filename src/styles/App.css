@@ -5,10 +5,12 @@ body {
     --primary-color-hover: #2a356c;
     --secondary-color: #E6E6E6;
     --background-color: white;
-    --text-color-primary: balck;
+    --text-color-primary: black;
     --text-color-secondary: white;
     --footer-height: 85px;
     --secondary-color-dark: #1E1E1E;
+    --span-color: rgba(0, 0, 0, 0.45);
+    /*--span-color: red;*/
 }
 
 body[data-theme='dark'] {
@@ -17,6 +19,7 @@ body[data-theme='dark'] {
     --background-color: #222628;
     --text-color-primary: white;
     --text-color-secondary: black;
+    --span-color: white;
 }
 
 
@@ -30,8 +33,30 @@ body {
     height: 100%;
 }
 
-label, input, span {
+label, input {
     color: var(--text-color-primary) !important;
+}
+
+.ant-input-affix-wrapper span  {
+    color: var(--span-color) !important;
+}
+
+.ant-progress-text,
+.ant-btn span,
+.ant-select-selector span,
+.ant-picker-separator span,
+.ant-picker-suffix span,
+.ant-tree-list-holder span
+{
+    color: var(--text-color-primary) !important;
+}
+
+.ant-btn.ant-btn-primary span {
+    color: white !important;
+}
+
+.ant-message-notice {
+
 }
 
 .ant-input,
@@ -42,9 +67,12 @@ label, input, span {
 .ant-tree-list-holder,
 .ant-btn.ant-btn-default,
 .ant-btn.ant-btn-dashed,
-.ant-tag,
 .ant-select-selector,
 .ant-select-dropdown {
+    background-color: var(--background-color) !important;
+}
+
+.ant-tag:not(.ant-tag-has-color) {
     background-color: var(--background-color) !important;
 }
 
@@ -65,6 +93,16 @@ input:-webkit-autofill:active  {
 }
 .ant-picker-header > button > span {
     color: black !important;
+}
+
+.tag-text:not(.ant-tag-has-color) {
+    color: var(--text-color-primary) !important;
+    /*color: black !important;*/
+}
+
+.ant-progress {
+    /*margin-top: 10px;*/
+    margin-bottom: 20px;
 }
 
 
@@ -136,7 +174,7 @@ input:-webkit-autofill:active  {
     height: var(--footer-height);
     color: var(--text-color-primary);
 }
-.footer a {
+a {
     box-shadow: inset 0 0 0 0 var(--primary-color);
     color: var(--text-color-primary);
     margin: 0 -.25rem;
@@ -144,7 +182,7 @@ input:-webkit-autofill:active  {
     transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
 
 }
-.footer a:hover {
+a:hover {
     box-shadow: inset 150px 0 0 0 var(--primary-color);
     color: white;
 }
@@ -153,3 +191,8 @@ input:-webkit-autofill:active  {
     font-size: 20px;
 }
 
+.ag-cell-wrapper img {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+}

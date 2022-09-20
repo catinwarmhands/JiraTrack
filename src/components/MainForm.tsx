@@ -48,7 +48,6 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
         }
     };
 
-
     getFiltersList = (): JSX.Element[] => {
         const treeData: DataNode[] = [{
             title: 'Все',
@@ -131,7 +130,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
             (
                 <Form.Item
                     label="Дата открытия задачи"
-                    name="dateOpen"
+                    name="dateCreated"
                 >
                     <DatePicker.RangePicker
                         allowEmpty={[true, true]}
@@ -157,7 +156,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
             (
                 <Form.Item
                     label="Дата последнего изменения"
-                    name="dateLastChange"
+                    name="dateUpdated"
                 >
                     <DatePicker.RangePicker
                         allowEmpty={[true, true]}
@@ -258,9 +257,9 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
     saveValuesToLocalStorage = (values: {[key: string]: any}): void => {
         for (const key in values) {
             let value = values[key]
-            if (key === "password") {
-                continue;
-            }
+            // if (key === "password") {
+            //     continue;
+            // }
             if (
                 value === undefined
                 || value === null

@@ -2,6 +2,7 @@ import {Button, Tag, Select, InputNumber, Input} from "antd";
 import * as React from "react";
 import '../styles/FilterInput.css';
 import {CloseCircleFilled, CloseOutlined, PlusOutlined} from '@ant-design/icons';
+import _ from "lodash";
 
 export type FilterValueType = {condition?: ("and" | "or"), operation: string, value: number, category?: string};
 type FilterOperationType = {key: string, label: string};
@@ -30,11 +31,14 @@ interface FilterInputState {
 }
 
 class FilterInput extends React.Component<FilterInputProps, FilterInputState> {
+    id: string;
+
     constructor(props: FilterInputProps) {
         super(props)
         this.state = {
             items: props.items || [],
         }
+        this.id = _.uniqueId("FilterInput")
     }
 
     handleChange = () => {
@@ -76,12 +80,12 @@ class FilterInput extends React.Component<FilterInputProps, FilterInputState> {
 
     render = () => {
         return (
-            <span className={"Filter ant-input-affix-wrapper " + (this.props.className || "")}>
+            <span className={"Filter ant-input-affix-wrapper " + (this.props.className || "")} key={this.id}>
                 {
                     this.state.items.map((item, index) => {
                         return (
-                            <div className={"FilterItem"}>
-                                <Input.Group compact>
+                            <div className={"FilterItem"} >
+                                <Input.Group compact key={this.id+"_"+index}>
                                     {
                                         index !== 0 && (
                                             <Select
@@ -145,7 +149,7 @@ class FilterInput extends React.Component<FilterInputProps, FilterInputState> {
                         );
                     })
                 }
-                <Tag className="site-tag-plus" onClick={this.handleAdd}>
+                <Tag className="site-tag-plus" onClick={this.handleAdd} key={this.id + "_add"}>
                     <PlusOutlined/>
                 </Tag>
                 {
@@ -157,7 +161,7 @@ class FilterInput extends React.Component<FilterInputProps, FilterInputState> {
                                 tabIndex={-1}
                                 onClick={this.handleClear}
                             >
-                                <CloseCircleFilled/>
+                                <CloseCircleFilled key={this.id + "_clear"}/>
                             </span>
                         </span>
                     )
