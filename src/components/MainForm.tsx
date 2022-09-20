@@ -1,4 +1,4 @@
-import {Button, Col, DatePicker, Form, Input, Row, Select, Tooltip, Tree} from "antd";
+import {Button, Col, DatePicker, Form, Input, Row, Select, Spin, Tooltip, Tree} from "antd";
 import * as React from "react";
 import '../styles/MainForm.css';
 import {DownloadOutlined, LinkOutlined, LockOutlined, UnorderedListOutlined, UserOutlined} from '@ant-design/icons';
@@ -10,6 +10,7 @@ import _ from "lodash";
 
 interface MainFormProps {
     onFinish: (values: {[key: string]: any}) => void;
+    isLoading: boolean;
 }
 
 interface MainFormState {
@@ -40,7 +41,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
         const newColumnsCount = Math.max(Math.floor(window.innerWidth / 600), 1);
         if (oldColumnsCount !== newColumnsCount || this.state.filtersChunks.length === 0) {
             const filters = this.getFiltersList();
-            const filtersColumnsCount = Math.min(newColumnsCount-1, filters.length);
+            const filtersColumnsCount = Math.min(newColumnsCount, filters.length);
             this.setState({
                 columnsCount: newColumnsCount,
                 filtersChunks: splitList(filters, filtersColumnsCount, "left"),
@@ -120,11 +121,61 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
         return [
             (
                 <Form.Item
+                    label="Адрес Jira"
+                    name="jiraUrl"
+                    rules={[{ required: true, message: 'Пожалуйста, введите url Jira' }]}
+                >
+                    <Input
+                        allowClear
+                        prefix={<LinkOutlined className="site-form-item-icon"/>}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
+                    label="Логин"
+                    name="username"
+                    rules={[{ required: true, message: 'Пожалуйста, введите свой логин от Jira' }]}
+                >
+                    <Input
+                        allowClear
+                        autoComplete="off"
+                        prefix={<UserOutlined className="site-form-item-icon"/>}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
+                    label="Пароль"
+                    name="password"
+                    rules={[{ required: true, message: 'Пожалуйста, введите свой пароль от Jira' }]}
+                >
+                    <Input.Password
+                        allowClear
+                        autoComplete="new-password"
+                        prefix={<LockOutlined className="site-form-item-icon"/>}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
+                    label="Проект"
+                    name="project"
+                    rules={[{ required: true, message: 'Пожалуйста, введите название проекта в Jira' }]}
+                >
+                    <Input
+                        allowClear
+                        prefix={<UnorderedListOutlined className="site-form-item-icon"/>}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
                     name="issues"
                     label={"Номера задач"}
                     valuePropName={"items"}
                 >
-                    <TagsInput/>
+                    <TagsInput addable={true} editable={true}/>
                 </Form.Item>
             ),
             (
@@ -167,20 +218,6 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                 </Form.Item>
             ),
             (
-                <Form.Item
-                    label="Статус"
-                    name="status"
-                    trigger={"onCheck"}
-                    valuePropName={"defaultCheckedKeys"}
-                >
-                    <Tree
-                        checkable={true}
-                        selectable={false}
-                        treeData={treeData}
-                    />
-                </Form.Item>
-            ),
-            (
                 <Form.Item label={"Метки"}>
                     <Input.Group compact>
                         <Form.Item
@@ -188,7 +225,12 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                             valuePropName={"items"}
                             noStyle
                         >
-                            <TagsInput className={"MainForm--tags"}/>
+                            <TagsInput
+                                className={"MainForm--tags"}
+                                disabled={this.props.isLoading}
+                                addable={true}
+                                editable={true}
+                            />
                         </Form.Item>
 
                         <Form.Item name="tagsMode" noStyle>
@@ -232,7 +274,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                     name="reopenFilters"
                     valuePropName={"items"}
                 >
-                    <FilterInput/>
+                    <FilterInput disabled={this.props.isLoading}/>
                 </Form.Item>
             ),
             (
@@ -242,12 +284,27 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                     valuePropName={"items"}
                 >
                     <FilterInput
+                        disabled={this.props.isLoading}
                         categories={[
                             {key: "any", label: "Любых"},
                             {key: "analytics", label: "На аналитику"},
                             {key: "development", label: "На разработку"},
                             {key: "testing", label: "На тестирование"},
                         ]}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
+                    label="Статус"
+                    name="status"
+                    trigger={"onCheck"}
+                    valuePropName={"defaultCheckedKeys"}
+                >
+                    <Tree
+                        checkable={true}
+                        selectable={false}
+                        treeData={treeData}
                     />
                 </Form.Item>
             ),
@@ -288,74 +345,22 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
         return result;
     }
 
-    handleFinish = (values: {[key: string]: any}): void => {
+    handleFormFinish = (values: {[key: string]: any}): void => {
         this.saveValuesToLocalStorage(values);
         this.props.onFinish(values);
     }
 
     render = () => {
-        const columnsCount = Math.min(this.state.columnsCount, this.state.filtersChunks.length+1);
+        const columnsCount = Math.min(this.state.columnsCount, this.state.filtersChunks.length);
         const colSpan = Math.floor(24/columnsCount);
         const leftoverSpan = 24 - colSpan * columnsCount;
-
-        const labelSpans = [4];
-        const labelSpan = labelSpans[Math.min(columnsCount-1, labelSpans.length-1)];
-
-        const main = (
-            <>
-                <Form.Item
-                    label="Адрес Jira"
-                    name="jiraUrl"
-                    rules={[{ required: true, message: 'Пожалуйста, введите url Jira' }]}
-                >
-                    <Input
-                        allowClear
-                        prefix={<LinkOutlined className="site-form-item-icon"/>}
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    label="Логин"
-                    name="username"
-                    rules={[{ required: true, message: 'Пожалуйста, введите свой логин от Jira' }]}
-                >
-                    <Input
-                        allowClear
-                        autoComplete="off"
-                        prefix={<UserOutlined className="site-form-item-icon"/>}
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    label="Пароль"
-                    name="password"
-                    rules={[{ required: true, message: 'Пожалуйста, введите свой пароль от Jira' }]}
-                >
-                    <Input.Password
-                        allowClear
-                        autoComplete="new-password"
-                        prefix={<LockOutlined className="site-form-item-icon"/>}
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    label="Проект"
-                    name="project"
-                    rules={[{ required: true, message: 'Пожалуйста, введите название проекта в Jira' }]}
-                >
-                    <Input
-                        allowClear
-                        prefix={<UnorderedListOutlined className="site-form-item-icon"/>}
-                    />
-                </Form.Item>
-            </>
-        );
+        const labelSpan = 4;
 
         const buttons = (
-            <Form.Item>
+            <Form.Item label=" ">
                 <Input.Group compact>
-                    <Button type="primary" htmlType="submit">
-                        Сформировать
+                    <Button type="primary" htmlType="submit" className={"submit-button"}>
+                        {this.props.isLoading ? <Spin/> : "Сформировать"}
                     </Button>
                     <Tooltip placement="right" title="Экспорт в xlsx">
                         <Button>
@@ -380,13 +385,12 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                 //     // returnFilters: [{operation: "==", value: 1, category: "any"},{condition: "or", operation: ">", value: 5, category: "development"},],
                 // }}
                 initialValues={this.getValuesFromLocalStorage()}
-                onFinish={this.handleFinish}
+                onFinish={this.handleFormFinish}
                 colon={false}
+                disabled={this.props.isLoading}
+                labelWrap
             >
                 <Row gutter={10}>
-                    <Col span={colSpan}>
-                        {main}
-                    </Col>
                     {
                         this.state.filtersChunks.map((chunk, index) =>
                             <>
@@ -401,7 +405,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                     }
                 </Row>
                 <Row>
-                    <Col span={24}>
+                    <Col span={colSpan}>
                         {buttons}
                     </Col>
                 </Row>

@@ -2,12 +2,18 @@ import * as React from "react";
 import '../styles/TagsInput.css';
 import {Input, Tag} from "antd";
 import {PlusOutlined, CloseCircleFilled} from '@ant-design/icons';
+import _ from "lodash";
 
 
 interface TagsInputProps {
     items?: string[];
     onChange?: (items: string[]) => void;
     className?: string;
+    disabled?: boolean;
+    addable?: boolean;
+    editable?: boolean;
+    onRemove?: (item: string) => void;
+    prefix?: JSX.Element;
 }
 
 interface TagsInputState {
@@ -19,16 +25,21 @@ interface TagsInputState {
 }
 
 class TagsInput extends React.Component<TagsInputProps, TagsInputState> {
+    id: string;
+
     constructor(props: TagsInputProps) {
         super(props);
         this.state = {
             items: props.items || [],
             isInputVisible: false,
         }
+        this.id = _.uniqueId("TagsInput")
     }
 
-    componentDidUpdate(prevProps: TagsInputProps, prevState: TagsInputState): void {
-
+    componentDidUpdate = (prevProps: Readonly<TagsInputProps>, _prevState: Readonly<TagsInputState>) => {
+        if (!_.isEqual(this.props.items, prevProps.items)) {
+            this.setState({items: this.props.items || []});
+        }
     }
 
     handleChange = () => {
@@ -37,6 +48,7 @@ class TagsInput extends React.Component<TagsInputProps, TagsInputState> {
 
     handleRemove = (tagToRemove: string) => {
         this.setState({items: this.state.items.filter(tag => tag !== tagToRemove)}, this.handleChange);
+        this.props.onRemove && this.props.onRemove(tagToRemove);
     }
 
     handleNewInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,12 +86,33 @@ class TagsInput extends React.Component<TagsInputProps, TagsInputState> {
     };
 
     handleClear = () => {
+        if (this.props.disabled) {
+            return;
+        }
+        for (const item of this.state.items) {
+            this.props.onRemove && this.props.onRemove(item);
+        }
         this.setState({items: []}, this.handleChange);
     }
 
+    handleAdd = () => {
+        if (this.props.disabled) {
+            return;
+        }
+        this.setState({isInputVisible: true});
+    }
+
     render() {
+        const containerClassName = "TagsInput ant-input-affix-wrapper " + (this.props.disabled ? "ant-input-affix-wrapper-disabled " : "") + (this.props.className || "");
         return (
-            <div className={"TagsInput ant-input-affix-wrapper " + (this.props.className || "")}>
+            <div className={containerClassName}>
+                {
+                    this.props.prefix && (
+                        <span className={"TagsInput-prefix"}>
+                            {this.props.prefix}
+                        </span>
+                    )
+                }
                 {
                     this.state.items.map((tag, index) => {
                         if (index === this.state.editInputIndex) {
@@ -105,6 +138,9 @@ class TagsInput extends React.Component<TagsInputProps, TagsInputState> {
                                 >
                                     <div
                                         onClick={e => {
+                                            if (!this.props.editable) {
+                                                return;
+                                            }
                                             this.setState({editInputIndex: index, editInputValue:tag})
                                             e.preventDefault();
                                         }}
@@ -132,10 +168,11 @@ class TagsInput extends React.Component<TagsInputProps, TagsInputState> {
                     )
                 }
                 {
-                    !this.state.isInputVisible && (
+                    this.props.addable && !this.state.isInputVisible && (
                         <Tag
                             className="site-tag-plus"
-                            onClick={() => this.setState({isInputVisible: true})}
+                            key={this.id + "_add"}
+                            onClick={this.handleAdd}
                         >
                             <PlusOutlined/>
                         </Tag>

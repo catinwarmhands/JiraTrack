@@ -1,0 +1,13 @@
+.customHeaderLabel {
+    float: left;
+    margin: 0 0 0 3px;
+}
+
+.ag-header-cell:not(:hover) .customHeaderButton {
+    display: none;
+}
+
+.customHeaderButton {
+    display: inline-block;
+    float: right;
+}

@@ -17,13 +17,13 @@ const DEFAULT_OPERATIONS: FilterOperationType[] = [
     {key: "<=", label: "Меньше или равно"},
 ];
 
-
 interface FilterInputProps {
     items?: FilterValueType[];
     operations?: FilterOperationType[];
     categories?: FilterCategoryType[];
     onChange?: (value: FilterValueType[]) => void;
     className?: string;
+    disabled?: boolean;
 }
 
 interface FilterInputState {
@@ -50,6 +50,9 @@ class FilterInput extends React.Component<FilterInputProps, FilterInputState> {
     }
 
     handleAdd = () => {
+        if (this.props.disabled) {
+            return;
+        }
         const firstOperation: string = (this.props.operations || DEFAULT_OPERATIONS)[0].key;
         let firstCategory: string | undefined = (this.props.categories && this.props.categories.length > 0) ? this.props.categories[0].key : undefined;
         const newValue: FilterValueType = {
@@ -75,12 +78,16 @@ class FilterInput extends React.Component<FilterInputProps, FilterInputState> {
     }
 
     handleClear = () => {
+        if (this.props.disabled) {
+            return;
+        }
         this.setState({items: []}, this.handleChange);
     }
 
     render = () => {
+        const containerClassName = "TagsInput ant-input-affix-wrapper " + (this.props.disabled ? "ant-input-affix-wrapper-disabled " : "") + (this.props.className || "");
         return (
-            <span className={"Filter ant-input-affix-wrapper " + (this.props.className || "")} key={this.id}>
+            <span className={containerClassName} key={this.id}>
                 {
                     this.state.items.map((item, index) => {
                         return (

@@ -7,9 +7,9 @@ body {
     white-space: normal;
 }
 
-.ant-form-item-label > label {
-    height: auto;
-}
+/*.ant-form-item-label > label {*/
+/*    height: auto;*/
+/*}*/
 
 .MainForm--assignee {
     width: calc(100% - var(--assigneeModeWidth));
@@ -39,4 +39,6 @@ body {
     width: 100%;
 }
 
-
+.submit-button {
+    width: 130px;
+}

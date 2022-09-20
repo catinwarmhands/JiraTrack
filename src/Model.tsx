@@ -1,13 +1,12 @@
-import * as React from "react";
 import {Moment} from 'moment'
 import {FilterValueType} from "./components/FilterInput";
-import _ from "lodash";
-import {JiraAPI} from "./JiraAPI";
+import {keyComparator} from "./components/Comparators";
 
 interface ModelProps {
     showMessage: (category: "success" | "warning" | "error", msg: string) => void;
     onProgressChange: (percent: number, failed: boolean) => void;
     onDataChange: (rowData: any[]) => void;
+    fetchCount: number;
 }
 
 interface ModelState {
@@ -29,12 +28,12 @@ interface ModelState {
 
     rowData: any[];
 
-    needsFullUpdate: boolean;
-    needsPartialUpdate: boolean;
-    needsRefresh: boolean;
     progress: number;
-    api?: JiraAPI;
     updateFailed: boolean;
+
+    originUrl?: string;
+    searchUrl?: string;
+    headers?: Headers;
 }
 
 export default class Model {
@@ -44,9 +43,6 @@ export default class Model {
     constructor(props: ModelProps) {
         this.props = props;
         this.state = {
-            needsFullUpdate: false,
-            needsPartialUpdate: false,
-            needsRefresh: false,
             progress: 0,
             updateFailed: false,
             rowData: [],
@@ -64,73 +60,122 @@ export default class Model {
     }
 
     componentDidUpdate = (prevState: Readonly<ModelState>) => {
-        if (
-            this.state.jiraUrl !== prevState.jiraUrl
-            || this.state.username !== prevState.username
-            || this.state.password !== prevState.password
-            || this.state.project !== prevState.project
-        ) {
-            this.setState({needsFullUpdate: true, needsRefresh: false});
-        }
-
         if (this.state.progress !== prevState.progress || this.state.updateFailed !== prevState.updateFailed) {
             this.props.onProgressChange(this.state.progress, this.state.updateFailed);
         }
-
-        if (!_.isEqual(this.state.rowData, prevState.rowData)) {
-            this.props.onDataChange && this.props.onDataChange(this.state.rowData);
-        }
     }
 
-    setProgress = (progress: number) => {
-        this.setState({progress: progress});
+    isUpdateFailed = (): boolean => {
+        return this.state.updateFailed;
     }
 
-    onStart = (values: {[key: string]: any}) => {
-        this.setState(values);
-        this.setState({needsRefresh: true});
-        this.setState({helloWorld: true});
+    handleSubmit = (values: {[key: string]: any}) => {
+        const originUrl = new URL(values.jiraUrl).origin;
+
+        this.setState({
+            ...values,
+            needsRefresh: true,
+            originUrl: originUrl,
+            searchUrl: originUrl + "/rest/api/2/search",
+            headers: new Headers({
+                "Content-Type": "application/json",
+                "Authorization": "Basic " + btoa(values.username + ":" + values.password),
+            })
+        });
+
         this.update();
     }
 
     update = async () => {
         try {
-            if (this.state.needsFullUpdate) {
-                await this.fullUpdate();
-                this.props.showMessage("success", "done fullUpdate");
-            } else if (this.state.needsPartialUpdate) {
-                await this.partialUpdate();
-                this.props.showMessage("success", "done partialUpdate");
-            }
-            if (this.state.needsRefresh) {
-                await this.refresh()
-                this.props.showMessage("success", "done refresh");
-            }
-            this.setState({
-                needsFullUpdate: false,
-                needsPartialUpdate: false,
-                needsRefresh: false,
-                updateFailed: false,
-            });
+            this.setState({updateFailed: false, progress: 0});
+            let rowData = await this.getIssues();
+            console.log(rowData)
+            this.setState({rowData: rowData})
+
         } catch (e: any) {
+            console.error(e);
             this.props.showMessage("error", e.message);
-            this.setState({updateFailed: true});
+            this.setState({updateFailed: true, rowData: []});
+        } finally {
+            this.props.onDataChange(this.state.rowData);
         }
-    }
-
-    fullUpdate = async () => {
-        const api = new JiraAPI(this.state.jiraUrl!, this.state.username!, this.state.password!, this.state.project!);
-        let rowData = await api.getIssues(this.setProgress);
-        console.log(rowData)
-        this.setState({rowData: rowData})
-        this.setState({needsRefresh: false});
-    }
-
-    partialUpdate = async () => {
 
     }
 
-    refresh = async () => {
+    getJQL = (): string => {
+        let jql: string[] = [];
+        jql.push("project =");
+        jql.push(this.state.project!);
+        return jql.join(" ");
+    }
 
+    request = async (url: string, params: any): Promise<any> => {
+        return await fetch(url + "?" + new URLSearchParams(params), {
+            method: 'GET',
+            headers: this.state.headers!,
+        }).then((response) => response.json()).catch(err => this.props.showMessage("error", err));
+    }
+
+    getTotalIssuesCount = async (jql: string) => {
+        const result = await this.request(this.state.searchUrl!, {maxResults: "0", jql: jql});
+        if (result.errorMessages && result.errorMessages.length >= 1) {
+            throw Error(result.errorMessages[0]);
+        }
+        return result.total;
+    }
+
+    getIssues = async () => {
+        const jql = this.getJQL();
+        const totalIssuesCount = await this.getTotalIssuesCount(jql);
+
+        let result: any[] = [];
+        for (let i = 0; i < totalIssuesCount; i += this.props.fetchCount) {
+            const response = await this.request(this.state.searchUrl!, {
+                startAt: i.toString(),
+                maxResults: this.props.fetchCount.toString(),
+                jql: jql,
+                fields: [
+                    "issuetype",
+                    "priority",
+                    "status",
+                    "summary",
+                    "labels",
+                    "created",
+                    "duedate",
+                    "updated",
+                    // "assignee",
+                ]
+            });
+            for (const e of response.issues) {
+                result.push({
+                    type: {name: e.fields.issuetype?.name, iconUrl: e.fields.issuetype?.iconUrl},
+                    key: {code: e.key, href: this.state.originUrl! + "/browse/" + e.key},
+                    priority: {name: e.fields.priority?.name, iconUrl: e.fields.priority?.iconUrl},
+                    status: e.fields.status?.name,
+                    summary: e.fields.summary,
+                    tags: e.fields.labels,
+                    dateCreated: e.fields.created,
+                    dateRelease: e.fields.duedate,
+                    dateUpdated: e.fields.updated,
+                    // reopenCount: e.fields.reopenCount,
+                    // reopenAnalytics: e.fields.reopenAnalytics,
+                    // reopenDevelopment: e.fields.reopenDevelopment,
+                    // reopenTesting: e.fields.reopenTesting,
+                    // initialEstimate: e.fields.initialEstimate,
+                    // factSpend: e.fields.factSpend,
+                });
+            }
+            this.setState({progress: Math.round(result.length / totalIssuesCount * 100)});
+
+            if (i >= 100) {
+                break;
+            }
+        }
+
+        result.sort((a: any, b: any) => keyComparator(a.key, b.key));
+        this.setState({progress: 100});
+
+        return result;
     }
 }

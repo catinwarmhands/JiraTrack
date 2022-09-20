@@ -10,6 +10,7 @@ body {
     --footer-height: 85px;
     --secondary-color-dark: #1E1E1E;
     --span-color: rgba(0, 0, 0, 0.45);
+    --no-data-color: var(--secondary-color);
     /*--span-color: red;*/
 }
 
@@ -20,6 +21,7 @@ body[data-theme='dark'] {
     --text-color-primary: white;
     --text-color-secondary: black;
     --span-color: white;
+    --no-data-color: #6e6e6e;
 }
 
 
@@ -194,5 +196,24 @@ a:hover {
 .ag-cell-wrapper img {
     width: 16px;
     height: 16px;
+    margin-right: 10px;
+}
+
+.no-data {
+    text-align: center;
+    font-size: large;
+    color: var(--text-color-primary);
+}
+
+.no-data svg {
+    width: 256px;
+    height: 256px;
+    fill: var(--no-data-color);
+    display: block;
+    margin: auto;
+}
+
+.hidden-columns-prefix {
+    vertical-align: middle;
     margin-right: 10px;
 }

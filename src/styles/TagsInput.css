@@ -23,6 +23,9 @@
     margin-top: 2px;
     margin-bottom: 2px;
 }
+.TagsInput-prefix {
+    float: left;
+}
 .TagsInput-suffix {
     float: right;
 }
