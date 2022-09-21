@@ -314,9 +314,9 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
     saveValuesToLocalStorage = (values: {[key: string]: any}): void => {
         for (const key in values) {
             let value = values[key]
-            // if (key === "password") {
-            //     continue;
-            // }
+            if (key === "password") {
+                continue;
+            }
             if (
                 value === undefined
                 || value === null
@@ -342,6 +342,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
         result.status = result.status || ["all"];
         result.tagsMode = result.tagsMode || "any";
         result.assigneeMode = result.assigneeMode || "any";
+        result.project = result.project || "NEODEV";
         return result;
     }
 
