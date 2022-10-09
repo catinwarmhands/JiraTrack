@@ -1,35 +1,59 @@
 import React from "react";
-import {Tag, Tooltip} from "antd";
+import {Progress, Tag, Tooltip} from "antd";
 import moment from "moment";
+import '../styles/CellRenderers.css';
+import {calculatePercent, secondsToManTimeString} from "../utils";
+import _ from "lodash";
+import {ColumnResizedEvent} from "ag-grid-community";
 
-export class NameAndIconRenderer extends React.Component<any, any> {
+export class TextAndIconRenderer extends React.Component<any, any> {
+    constructor(props: any) {
+        super(props);
+        props.api.addEventListener('columnResized', this.handleColumnResized);
+    }
+
+    handleColumnResized = (event: ColumnResizedEvent) => {
+        if (event.column === this.props.column) {
+            this.forceUpdate();
+        }
+    }
+
     render = () => {
-        return (
-            <span>
-                {this.props.value.iconUrl && <img src={this.props.value.iconUrl} alt={this.props.value.name}/>}
-                {this.props.value.name}
-            </span>
-        );
+        const width = this.props.column.getActualWidth();
+        const img = this.props.value.iconUrl && <img src={this.props.value.iconUrl} alt={this.props.value.text}/>;
+        if (width > 100) {
+            return (
+                <span className={"text-and-icon-renderer"}>
+                    {img}
+                    <span className={"vertical-align-middle"}>
+                        {this.props.value.href ? <HrefRenderer value={this.props.value}/> : this.props.value.text}
+                    </span>
+                </span>
+            );
+        } else {
+            return (
+                <span className={"text-and-icon-renderer"}>
+                    <Tooltip title={this.props.value.text}>
+                        {
+                            this.props.value.href ?
+                                <a href={this.props.value.href || "/"} target="_blank" rel="noopener noreferrer">
+                                    {img}
+                                </a>
+                                :
+                                img
+                        }
+                    </Tooltip>
+                </span>
+            );
+        }
     }
 }
 
-export class NameAndIconCompactRenderer extends React.Component<any, any> {
+export class HrefRenderer extends React.Component<any, any> {
     render = () => {
         return (
-            <span>
-                <Tooltip title={this.props.value.name}>
-                    {this.props.value.iconUrl && <img src={this.props.value.iconUrl} alt={this.props.value.name}/>}
-                </Tooltip>
-            </span>
-        );
-    }
-}
-
-export class KeyRenderer extends React.Component<any, any> {
-    render = () => {
-        return (
-            <a href={this.props.value.href || "/"} target="_blank" rel="noopener noreferrer">
-                {this.props.value.code}
+            <a className={"fancy-href"} href={this.props.value.href || "/"} target="_blank" rel="noopener noreferrer">
+                {this.props.value.text}
             </a>
         );
     }
@@ -57,6 +81,35 @@ export class TagsRenderer extends React.Component<any, any> {
                 )
             }
             </span>
+        );
+    }
+}
+
+export class ManTimeRenderer extends React.Component<any, any> {
+    render = () => {
+        const initialString = secondsToManTimeString(this.props.value.initial);
+        const factString = secondsToManTimeString(this.props.value.fact);
+        const percent = calculatePercent(this.props.value);
+        const isBothValuesPresent = _.isSafeInteger(this.props.value.fact) && _.isSafeInteger(this.props.value.initial);
+        const status = (isBothValuesPresent && this.props.value.fact > this.props.value.initial) ? "exception" : undefined;
+        return (
+            <div className={"man-time-cell"}>
+                <div className={"man-time-cell--value"}>
+                    {initialString} / {factString}
+                </div>
+                {
+                    isBothValuesPresent &&
+                    <div className={"man-time-cell--progress"}>
+                        <Progress
+                            percent={percent}
+                            success={status ? undefined : {percent: percent}} // что бы даже если < 100, то все равно было зеленым
+                            size="small"
+                            status={status}
+                            format={_ => `${percent}%`} // процент клэмпится до 100, приходится форсить
+                        />
+                    </div>
+                }
+            </div>
         );
     }
 }

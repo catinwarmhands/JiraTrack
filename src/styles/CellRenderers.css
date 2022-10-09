@@ -1,0 +1,45 @@
+.vertical-align-middle {
+    vertical-align: middle;
+}
+
+.man-time-cell {
+    --progress-width: 90%;
+}
+
+.man-time-cell .ant-progress-outer {
+    width: var(--progress-width);
+}
+
+.man-time-cell .ant-progress-text {
+    width: calc(100% - var(--progress-width));
+}
+
+.man-time-cell .ant-progress {
+    margin-bottom: 0 !important;
+}
+
+.man-time-cell--value {
+    line-height: normal !important;
+}
+.man-time-cell--progress {
+    margin-top: -10px;
+}
+
+.ag-cell-wrapper img {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+}
+
+.fancy-href {
+    box-shadow: inset 0 0 0 0 var(--primary-color);
+    color: var(--text-color-primary);
+    margin: 0 -.25rem;
+    padding: 0 .25rem;
+    transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
+}
+
+.fancy-href:hover {
+    box-shadow: inset 150px 0 0 0 var(--primary-color);
+    color: white;
+}

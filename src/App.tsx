@@ -13,15 +13,17 @@ import {ColDef, ColumnApi, ColumnVisibleEvent, GridApi, GridReadyEvent} from "ag
 import Model from "./Model";
 import {
     dateFormatter,
-    KeyRenderer,
-    NameAndIconRenderer,
+    HrefRenderer,
+    TextAndIconRenderer,
     TagRenderer,
-    TagsRenderer
+    TagsRenderer, ManTimeRenderer
 } from "./components/CellRenderers";
-import {dateComparator, keyComparator, nameAndIconComparator} from "./components/Comparators";
+import {dateComparator, keyComparator, manTimeComparator, textAndIconComparator} from "./components/Comparators";
 import HeaderComponent from "./components/HeaderComponent";
 import TagsInput from "./components/TagsInput";
 import {EyeInvisibleOutlined} from "@ant-design/icons";
+
+type MessageCategory = "success" | "warning" | "error";
 
 interface AppProps {
 }
@@ -76,9 +78,6 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     handleGridReady = (event: GridReadyEvent) => {
-        // const gridApi = event.api;
-        // gridApi.addEventListener("columnhidden", console.log)
-        // const columnApi = event.columnApi;
         this.setState({gridApi: event.api, columnApi: event.columnApi});
     }
 
@@ -95,40 +94,16 @@ class App extends React.Component<AppProps, AppState> {
 
     handleFormFinish = (values: {[key: string]: any}) => {
         this.setState({isLoading: true, formFinishCount: this.state.formFinishCount+1});
+        this.forceUpdate();
         this.state.model.handleSubmit(values);
     }
 
-    showMessage = (category: "success" | "warning" | "error", msg: string, duration: number = 5): void => {
+    showMessage = (category: MessageCategory, msg: string, duration: number = 5): void => {
         switch (category) {
             case "success": message.success(msg, duration); break;
             case "warning": message.warning(msg, duration); break;
             case "error": message.error(msg, duration); break;
         }
-    }
-
-    renderHeader = () => {
-        return (
-            <div className={"header"}>
-                <div className={"logo"}>JiraTrack</div>
-                <Switch
-                    className={"theme-switch"}
-                    checkedChildren={<span className="material-icons-outlined">dark_mode</span>}
-                    unCheckedChildren={<span className="material-icons-outlined">light_mode</span>}
-                    defaultChecked={this.state.theme === "dark"}
-                    onChange={this.handleThemeChange}
-                />
-            </div>
-        );
-    }
-
-    renderFooter = () => {
-        const year = new Date().getFullYear();
-        return (
-            <div className={"footer"}>
-                <p><a href="https://github.com/catinwarmhands/JiraTrack">JiraTrack</a></p>
-                <p>Created by <a href="https://github.com/catinwarmhands">Lev Buimistriuk</a> at <a href="https://www.neoflex.ru/">Neoflex</a> {"©" + year}</p>
-            </div>
-        );
     }
 
     getDefaultColumnDefs = () => {
@@ -148,20 +123,21 @@ class App extends React.Component<AppProps, AppState> {
             {
                 field: "type",
                 headerName: "Тип",
-                cellRenderer: NameAndIconRenderer,
-                comparator: nameAndIconComparator,
+                cellRenderer: TextAndIconRenderer,
+                comparator: textAndIconComparator,
             },
             {
                 field: "key",
                 headerName: "Задача",
-                cellRenderer: KeyRenderer,
+                cellRenderer: HrefRenderer,
                 comparator: keyComparator,
+                sort: "asc",
             },
             {
                 field: "priority",
                 headerName: "Приоритет",
-                cellRenderer: NameAndIconRenderer,
-                comparator: nameAndIconComparator,
+                cellRenderer: TextAndIconRenderer,
+                comparator: textAndIconComparator,
             },
             {
                 field: "status",
@@ -178,28 +154,32 @@ class App extends React.Component<AppProps, AppState> {
                 cellRenderer: TagsRenderer,
             },
             {
+                field: "assignee",
+                headerName: "Исполнитель",
+                cellRenderer: TextAndIconRenderer,
+                comparator: textAndIconComparator,
+            },
+            {
                 field: "reopenCount",
                 headerName: "Реопенов",
             },
             {
-                field: "reopenAnalytics",
+                field: "returnAnalytics",
                 headerName: "Возвратов в аналитику",
             },
             {
-                field: "reopenDevelopment",
+                field: "returnDevelopment",
                 headerName: "Возвратов в разработку",
             },
             {
-                field: "reopenTesting",
+                field: "returnTesting",
                 headerName: "Возвратов в тестирование",
             },
             {
-                field: "initialEstimate",
-                headerName: "Первоначальная оценка",
-            },
-            {
-                field: "factSpend",
-                headerName: "Фактический расход",
+                field: "manTime",
+                headerName: "Оценка / Расход",
+                cellRenderer: ManTimeRenderer,
+                comparator: manTimeComparator,
             },
             {
                 field: "dateCreated",
@@ -209,7 +189,7 @@ class App extends React.Component<AppProps, AppState> {
             },
             {
                 field: "dateRelease",
-                headerName: "Плановая поставка",
+                headerName: "Срок исполнения",
                 valueFormatter: dateFormatter,
                 comparator: dateComparator,
             },
@@ -260,6 +240,7 @@ class App extends React.Component<AppProps, AppState> {
                     defaultColDef={this.state.defaultColumnDefs}
                     multiSortKey={'ctrl'}
                     onColumnVisible={this.handleColumnsVisibilityChanged}
+                    rowBuffer={30}
                 />
             </div>
         );
@@ -282,7 +263,11 @@ class App extends React.Component<AppProps, AppState> {
             <div className={"main"}>
                 <Row>
                     <Col span={24}>
-                        <MainForm onFinish={this.handleFormFinish} isLoading={this.state.isLoading}/>
+                        <MainForm
+                            onFinish={this.handleFormFinish}
+                            isLoading={this.state.isLoading}
+                            isExportButtonVisible={this.state.rowData.length !== 0 && !this.state.isLoading}
+                        />
                     </Col>
                 </Row>
                 <Row>
@@ -337,6 +322,31 @@ class App extends React.Component<AppProps, AppState> {
                     </g>
                 </svg>
                 {message}
+            </div>
+        );
+    }
+
+    renderHeader = () => {
+        return (
+            <div className={"header"}>
+                <div className={"logo"}>JiraTrack</div>
+                <Switch
+                    className={"theme-switch"}
+                    checkedChildren={<span className="material-icons-outlined">dark_mode</span>}
+                    unCheckedChildren={<span className="material-icons-outlined">light_mode</span>}
+                    defaultChecked={this.state.theme === "dark"}
+                    onChange={this.handleThemeChange}
+                />
+            </div>
+        );
+    }
+
+    renderFooter = () => {
+        const year = new Date().getFullYear();
+        return (
+            <div className={"footer"}>
+                <p><HrefRenderer value={{href: "https://github.com/catinwarmhands/JiraTrack", text: "JiraTrack"}}/></p>
+                <p>Created by <HrefRenderer value={{href: "https://github.com/catinwarmhands", text: "Lev Buimistriuk"}}/> at <HrefRenderer value={{href: "https://www.neoflex.ru/", text: "Neoflex"}}/> {"©" + year}</p>
             </div>
         );
     }

@@ -1,16 +1,40 @@
 import {Button, Col, DatePicker, Form, Input, Row, Select, Spin, Tooltip, Tree} from "antd";
 import * as React from "react";
 import '../styles/MainForm.css';
-import {DownloadOutlined, LinkOutlined, LockOutlined, UnorderedListOutlined, UserOutlined} from '@ant-design/icons';
+import {DownloadOutlined, LockOutlined, UnorderedListOutlined, UserOutlined} from '@ant-design/icons';
 import type {DataNode} from 'antd/es/tree';
 import TagsInput from "./TagsInput";
 import FilterInput from "./FilterInput";
 import {parseJSON, splitList} from "../utils";
 import _ from "lodash";
+import { RuleObject } from "antd/lib/form";
+
+const validateNoSpaces = (_: RuleObject, values: string[]) => {
+    if (values) {
+        for (const value of values) {
+            if (/\s/.test(value)) {
+                return Promise.reject();
+            }
+        }
+    }
+    return Promise.resolve();
+}
+
+const validateOnlyDigits = (_: RuleObject, values: string[]) => {
+    if (values) {
+        for (const value of values) {
+            if (!/^[\d\s]+$/.test(value)) {
+                return Promise.reject();
+            }
+        }
+    }
+    return Promise.resolve();
+}
 
 interface MainFormProps {
     onFinish: (values: {[key: string]: any}) => void;
     isLoading: boolean;
+    isExportButtonVisible: boolean;
 }
 
 interface MainFormState {
@@ -36,18 +60,28 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
         window.removeEventListener('resize', this.updateDimensions);
     }
 
+    componentDidUpdate(prevProps: Readonly<MainFormProps>, prevState: Readonly<MainFormState>) {
+        if (this.props.isLoading !== prevProps.isLoading) {
+            this.calculateFiltersChunks(this.state.columnsCount);
+        }
+    }
+
     updateDimensions = () => {
         const oldColumnsCount = this.state.columnsCount;
         const newColumnsCount = Math.max(Math.floor(window.innerWidth / 600), 1);
         if (oldColumnsCount !== newColumnsCount || this.state.filtersChunks.length === 0) {
-            const filters = this.getFiltersList();
-            const filtersColumnsCount = Math.min(newColumnsCount, filters.length);
-            this.setState({
-                columnsCount: newColumnsCount,
-                filtersChunks: splitList(filters, filtersColumnsCount, "left"),
-            });
+            this.calculateFiltersChunks(newColumnsCount);
         }
     };
+
+    calculateFiltersChunks = (newColumnsCount: number) => {
+        const filters = this.getFiltersList();
+        const filtersColumnsCount = Math.min(newColumnsCount, filters.length);
+        this.setState({
+            columnsCount: newColumnsCount,
+            filtersChunks: splitList(filters, filtersColumnsCount, "left"),
+        });
+    }
 
     getFiltersList = (): JSX.Element[] => {
         const treeData: DataNode[] = [{
@@ -119,18 +153,18 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
             ],
         }];
         return [
-            (
-                <Form.Item
-                    label="Адрес Jira"
-                    name="jiraUrl"
-                    rules={[{ required: true, message: 'Пожалуйста, введите url Jira' }]}
-                >
-                    <Input
-                        allowClear
-                        prefix={<LinkOutlined className="site-form-item-icon"/>}
-                    />
-                </Form.Item>
-            ),
+            // (
+            //     <Form.Item
+            //         label="Адрес Jira"
+            //         name="jiraUrl"
+            //         rules={[{ required: true, message: 'Пожалуйста, введите url Jira' }]}
+            //     >
+            //         <Input
+            //             allowClear
+            //             prefix={<LinkOutlined className="site-form-item-icon"/>}
+            //         />
+            //     </Form.Item>
+            // ),
             (
                 <Form.Item
                     label="Логин"
@@ -152,7 +186,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                 >
                     <Input.Password
                         allowClear
-                        autoComplete="new-password"
+                        // autoComplete="new-password"
                         prefix={<LockOutlined className="site-form-item-icon"/>}
                     />
                 </Form.Item>
@@ -174,47 +208,12 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                     name="issues"
                     label={"Номера задач"}
                     valuePropName={"items"}
+                    rules={[
+                        {message: 'Номер задачи не может содержать пробел', validator: validateNoSpaces},
+                        {message: 'Номер задачи может состоять только из цифр', validator: validateOnlyDigits}
+                    ]}
                 >
                     <TagsInput addable={true} editable={true}/>
-                </Form.Item>
-            ),
-            (
-                <Form.Item
-                    label="Дата открытия задачи"
-                    name="dateCreated"
-                >
-                    <DatePicker.RangePicker
-                        allowEmpty={[true, true]}
-                        format={"DD.MM.yyyy"}
-                        placeholder={["С", "По"]}
-                        className={"MainForm--datepicker"}
-                    />
-                </Form.Item>
-            ),
-            (
-                <Form.Item
-                    label="Дата плановой поставки"
-                    name="dateRelease"
-                >
-                    <DatePicker.RangePicker
-                        allowEmpty={[true, true]}
-                        format={"DD.MM.yyyy"}
-                        placeholder={["С", "По"]}
-                        className={"MainForm--datepicker"}
-                    />
-                </Form.Item>
-            ),
-            (
-                <Form.Item
-                    label="Дата последнего изменения"
-                    name="dateUpdated"
-                >
-                    <DatePicker.RangePicker
-                        allowEmpty={[true, true]}
-                        format={"DD.MM.yyyy"}
-                        placeholder={["С", "По"]}
-                        className={"MainForm--datepicker"}
-                    />
                 </Form.Item>
             ),
             (
@@ -224,6 +223,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                             name="tags"
                             valuePropName={"items"}
                             noStyle
+                            rules={[{message: 'Метка не может содержать пробел', validator: validateNoSpaces}]}
                         >
                             <TagsInput
                                 className={"MainForm--tags"}
@@ -296,6 +296,45 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
             ),
             (
                 <Form.Item
+                    label="Дата открытия задачи"
+                    name="dateCreated"
+                >
+                    <DatePicker.RangePicker
+                        allowEmpty={[true, true]}
+                        format={"DD.MM.yyyy"}
+                        placeholder={["С", "По"]}
+                        className={"MainForm--datepicker"}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
+                    label="Дата плановой поставки"
+                    name="dateRelease"
+                >
+                    <DatePicker.RangePicker
+                        allowEmpty={[true, true]}
+                        format={"DD.MM.yyyy"}
+                        placeholder={["С", "По"]}
+                        className={"MainForm--datepicker"}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
+                    label="Дата последнего изменения"
+                    name="dateUpdated"
+                >
+                    <DatePicker.RangePicker
+                        allowEmpty={[true, true]}
+                        format={"DD.MM.yyyy"}
+                        placeholder={["С", "По"]}
+                        className={"MainForm--datepicker"}
+                    />
+                </Form.Item>
+            ),
+            (
+                <Form.Item
                     label="Статус"
                     name="status"
                     trigger={"onCheck"}
@@ -314,9 +353,9 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
     saveValuesToLocalStorage = (values: {[key: string]: any}): void => {
         for (const key in values) {
             let value = values[key]
-            if (key === "password") {
-                continue;
-            }
+            // if (key === "password") {
+            //     continue;
+            // }
             if (
                 value === undefined
                 || value === null
@@ -338,7 +377,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
         for (const key in localStorage) {
             result[key] = parseJSON(localStorage.getItem(key));
         }
-        result.jiraUrl = result.jiraUrl || "https://neojira.neoflex.ru/secure/Dashboard.jspa";
+        // result.jiraUrl = result.jiraUrl || "https://neojira.neoflex.ru/secure/Dashboard.jspa";
         result.status = result.status || ["all"];
         result.tagsMode = result.tagsMode || "any";
         result.assigneeMode = result.assigneeMode || "any";
@@ -347,6 +386,9 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
     }
 
     handleFormFinish = (values: {[key: string]: any}): void => {
+        if (values.assignee) {
+            values.assignee = values.assignee.trim();
+        }
         this.saveValuesToLocalStorage(values);
         this.props.onFinish(values);
     }
@@ -364,7 +406,7 @@ class MainForm extends React.Component<MainFormProps, MainFormState> {
                         {this.props.isLoading ? <Spin/> : "Сформировать"}
                     </Button>
                     <Tooltip placement="right" title="Экспорт в xlsx">
-                        <Button>
+                        <Button hidden={!this.props.isExportButtonVisible}>
                             <DownloadOutlined />
                         </Button>
                     </Tooltip>

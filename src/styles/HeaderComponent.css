@@ -1,13 +1,17 @@
-.customHeaderLabel {
+.custom-header-label,
+.custom-header-sort-index,
+.custom-header-sort-arrow {
+    display: inline-block;
     float: left;
-    margin: 0 0 0 3px;
+    margin-left: 3px;
 }
 
-.ag-header-cell:not(:hover) .customHeaderButton {
+
+.ag-header-cell:not(:hover) .custom-header-button {
     display: none;
 }
 
-.customHeaderButton {
+.custom-header-button {
     display: inline-block;
     float: right;
 }
